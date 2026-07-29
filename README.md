@@ -1,54 +1,82 @@
-# EngineeringTeam Crew
+# Engineering Team — Multi-Agent Software Delivery Crew
 
-Welcome to the EngineeringTeam Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+A multi-agent AI system that takes a plain-English software requirement and
+takes it all the way to working code: design → implementation → a Gradio demo
+UI → unit tests — built with [CrewAI](https://crewai.com).
 
-## Installation
+I built this while working through an agentic AI engineering course, then
+extended it with [name your actual change — e.g. "parameterized requirements
+input instead of a hardcoded scenario" / "a pytest feedback loop that reruns
+the crew on test failure" / etc].
 
-Ensure you have Python >=3.10 <3.13 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
+## What it does
 
-First, if you haven't already, install uv:
+Four agents run **sequentially**, each handing its output to the next:
+
+1. **Engineering Lead** — takes a natural-language requirements spec and
+   produces a detailed module design (classes, methods, responsibilities).
+2. **Backend Engineer** — implements the design as a working Python module.
+   Runs with `allow_code_execution=True` in a **sandboxed Docker
+   environment** (`code_execution_mode="safe"`), with execution timeouts and
+   retry limits — the LLM's generated code never runs unsandboxed on the
+   host.
+3. **Frontend Engineer** — writes a minimal Gradio UI (`app.py`) that
+   demonstrates the backend module.
+4. **Test Engineer** — writes unit tests for the backend module, also inside
+   the Docker sandbox.
+
+The default example (in `main.py`) asks the crew to build a small trading
+account management system — deposits, withdrawals, buy/sell of shares,
+portfolio valuation, P&L reporting — entirely from a plain-English spec.
+
+## Architecture
+
+```
+src/engineering_team/
+├── crew.py              # 4 agents, sequential process
+├── main.py               # Hardcoded requirements + entry point
+├── config/
+│   ├── agents.yaml        # Role, goal, backstory per agent
+│   └── tasks.yaml         # design_task → code_task → frontend_task/test_task
+└── tools/
+output/                    # Generated design doc, module, app.py, tests
+```
+
+## Setup
+
+Requires Python 3.10–3.12, [uv](https://docs.astral.sh/uv/), and Docker
+running locally (needed for the sandboxed code execution agents).
 
 ```bash
 pip install uv
-```
-
-Next, navigate to your project directory and install the dependencies:
-
-(Optional) Lock the dependencies and install them by using the CLI command:
-```bash
 crewai install
 ```
-### Customizing
 
-**Add your `OPENAI_API_KEY` into the `.env` file**
+Add `OPENAI_API_KEY` to a `.env` file in the project root.
 
-- Modify `src/engineering_team/config/agents.yaml` to define your agents
-- Modify `src/engineering_team/config/tasks.yaml` to define your tasks
-- Modify `src/engineering_team/crew.py` to add your own logic, tools and specific args
-- Modify `src/engineering_team/main.py` to add custom inputs for your agents and tasks
-
-## Running the Project
-
-To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
+## Running it
 
 ```bash
-$ crewai run
+crewai run
 ```
 
-This command initializes the engineering_team Crew, assembling the agents and assigning them tasks as defined in your configuration.
+This runs the crew against the requirements defined in `main.py` and writes
+the design doc, generated module, Gradio app, and tests to `output/`.
 
-This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+## Why the Docker sandboxing matters
 
-## Understanding Your Crew
+LLM-generated code shouldn't execute directly on the host — it can hallucinate
+destructive operations or simply be buggy. Sandboxing with execution timeouts
+and retry limits keeps the "write code and immediately test it" loop safe
+while still letting the agents self-correct.
 
-The engineering_team Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
+## What I'd improve next
 
-## Support
+[Genuine ideas — e.g. "parameterize requirements via CLI/file input instead
+of hardcoding them in main.py" / "feed pytest failures back into the crew for
+a self-correcting loop" / "add a code-review agent before tests run"]
 
-For support, questions, or feedback regarding the EngineeringTeam Crew or crewAI.
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
+## Credit
 
-Let's create wonders together with the power and simplicity of crewAI.
+Built while completing an agentic AI engineering course (CrewAI-based
+multi-agent projects), then extended as a portfolio project.
