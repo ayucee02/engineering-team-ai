@@ -5,9 +5,9 @@ takes it all the way to working code: design → implementation → a Gradio dem
 UI → unit tests — built with [CrewAI](https://crewai.com).
 
 I built this while working through an agentic AI engineering course, then
-extended it with [name your actual change — e.g. "parameterized requirements
-input instead of a hardcoded scenario" / "a pytest feedback loop that reruns
-the crew on test failure" / etc].
+extended it by removing unused CrewAI template scaffolding (an unreferenced
+`knowledge/` file and empty tool boilerplate) and cleaning up stray files
+from the original scaffolding.
 
 ## What it does
 
@@ -72,9 +72,11 @@ while still letting the agents self-correct.
 
 ## What I'd improve next
 
-[Genuine ideas — e.g. "parameterize requirements via CLI/file input instead
-of hardcoding them in main.py" / "feed pytest failures back into the crew for
-a self-correcting loop" / "add a code-review agent before tests run"]
+- Parameterize requirements via CLI/file input instead of hardcoding them in
+  `main.py`.
+- Feed pytest failures back into the crew for a self-correcting loop instead
+  of a one-shot test run.
+- Add a code-review agent before tests run, to catch design issues earlier.
 
 ## Credit
 
